@@ -1,5 +1,5 @@
-const consoleFormatter = require('../../util/consoleFormatter');
-const createShoppingCart = require('../order/createShoppingCart');
+const consoleFormatter = require('../util/consoleFormatter');
+const createOrderPayload = require('../order/createOrderPayload');
 
 function userInputHandler(client) {
     //Fired after a new message is received
@@ -11,7 +11,7 @@ function userInputHandler(client) {
         // If message type is order
         if (message.type == 'order') {
             const order = await message.getOrder()
-            createShoppingCart(client, message, chat, order)
+            createOrderPayload(client, message, chat, order)
         }
     });
 }

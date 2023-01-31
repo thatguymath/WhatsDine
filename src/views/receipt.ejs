@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      .receipt {
+        width: 80%;
+        margin: 0 auto;
+        padding: 30px;
+        border: 1px solid #ccc;
+        box-shadow: 2px 2px 10px #ccc;
+      }
+      .receipt h1 {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+      .receipt .order-details {
+        margin-bottom: 30px;
+      }
+      .receipt .order-details h2 {
+        margin-bottom: 10px;
+      }
+      .receipt .order-details p {
+        margin: 0;
+        font-size: 14px;
+        line-height: 20px;
+      }
+      .receipt .delivery-info {
+        margin-bottom: 30px;
+      }
+      .receipt .delivery-info h2 {
+        margin-bottom: 10px;
+      }
+      .receipt .delivery-info p {
+        margin: 0;
+        font-size: 14px;
+        line-height: 20px;
+      }
+      .receipt .payment-info {
+        margin-bottom: 30px;
+      }
+      .receipt .payment-info h2 {
+        margin-bottom: 10px;
+      }
+      .receipt .payment-info p {
+        margin: 0;
+        font-size: 14px;
+        line-height: 20px;
+      }
+      table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  td, th {
+    border: 1px solid black;
+    padding: 8px;
+    text-align: left;
+  }
+
+  th {
+    background-color: #f2f2f2;
+  }
+
+    </style>
+  </head>
+  <body>
+    <div class="receipt">
+      <h1>Recibo de Venda</h1>
+      <div class="order-details">
+        <h2>Informações do Pedido</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Quantidade</th>
+              <th>Preço</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% orderPayloadInstance.order.items.forEach( item => { %>
+              <tr>
+                <td><%= item.name %></td>
+                <td><%= item.quantity %></td>
+                <td>R$ <%= item.price %></td>
+              </tr>
+            <% }); %>
+            <tr>
+              <td colspan="3" style="text-align:right; font-weight:bold;">Total dos Itens: R$ <%= orderPayloadInstance.order.total %></td>
+            </tr>
+            <tr>
+              <td colspan="3" style="text-align:left; font-weight:bold;">Informações Adicionais do Pedido: <%= orderPayloadInstance._additionalOrderInformation %></td>
+            </tr>
+          </tbody>
+        </table> 
+      </div>
+      <% if (orderPayloadInstance._isTakeOut) { %>
+        <div class="delivery-info">
+          <h2>Retirada</h2>
+        </div>
+      <% } else { %>
+        <div class="delivery-info">
+          <h2>Informações da Entrega</h2>
+          <p>Logradouro: <%= orderPayloadInstance._address.street %></p>
+          <p>Número: <%= orderPayloadInstance._address.number %></p>
+          <p>CEP: <%= orderPayloadInstance._address.cep %></p>
+          <p>Informações Adicionais do Endereço: <%= orderPayloadInstance._address.additionalAddressInformation %></p>
+          <p>Taxa de Entrega: <%= orderPayloadInstance._deliveryFee %></p>
+          
+          <h2>Informações do Pagamento</h2>
+          <p>Método de Pagamento: <%= orderPayloadInstance._payment.method %></p>
+          <p>Troco para: <%= orderPayloadInstance._payment.changeForAmount %></p>
+        </div>
+      <% } %>
+    </body>
+</html>
+          

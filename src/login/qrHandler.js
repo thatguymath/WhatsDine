@@ -1,6 +1,6 @@
 const express = require('express');
 const qr = require('qr-image');
-const consoleFormatter = require('../../util/consoleFormatter');
+const consoleFormatter = require('../util/consoleFormatter');
 
 function generateQr(qrText) {
     const app = express();

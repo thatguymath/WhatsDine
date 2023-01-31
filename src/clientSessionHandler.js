@@ -1,5 +1,10 @@
-const { Client, LocalAuth } = require('whatsapp-web.js');
-const consoleFormatter = require('../util/consoleFormatter');
+const { Client, LocalAuth, Buttons, List } = require('whatsapp-web.js');
+global.Client = Client;
+global.LocalAuth = LocalAuth;
+global.Buttons = Buttons;
+global.List = List;
+
+const consoleFormatter = require('./util/consoleFormatter');
 const authentication = require('./login/authentication');
 const userInputHandler = require('./chatting/userInputHandler');
 
@@ -16,7 +21,7 @@ function spawnNewClient() {
     //Initialize session with given settings and parameters  
     client.initialize();
 
-    //Athenticate the client using QRCode and express server with hosted locally
+    //Authenticate the client using QRCode and express server with hosted locally
     authentication(client);
     
     //Fired after authentication is successful and system is connected to WhatsApp API
