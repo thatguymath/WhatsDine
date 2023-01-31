@@ -11,10 +11,9 @@ function createOrderPayload(client, message, chat, order) {
             this.userId = message.from/* .split('@')[0] */,
             this.name = message._data?.notifyName,
             this._cpf = '',
-            this.userNumber = message.from,
             this.order = {
                 id: message.orderId,
-                createdAt: order.createdAt,
+                createdAt: new Date(order.createdAt),
                 total: new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 2 }).format(order.total/1000),
                 items: order.products.map( product => {
                     return {

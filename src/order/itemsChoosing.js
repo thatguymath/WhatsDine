@@ -8,7 +8,7 @@ const fileName = path.basename(__filename, path.extname(__filename));
 function itemsChoosing(client, orderPayloadInstance) {
     orderPayloadInstance.checkoutPhase = fileName // switches control of orderPayloadInstance to current file
 
-    const StepsLeftDesignPattern = '🛒 *Escolha* → 🛵 Entrega → 💵 Pagamento' // As in https://ui-patterns.com/patterns/StepsLeft
+    const StepsLeftDesignPattern = '🛒 *Escolha*  →  🛵 Entrega  →  💵 Pagamento' // As in https://ui-patterns.com/patterns/StepsLeft
 
     // Buttons constructor
     let buttons_AdditionalOrderInformation = new global.Buttons(

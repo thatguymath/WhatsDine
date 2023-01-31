@@ -8,7 +8,7 @@ const fileName = path.basename(__filename, path.extname(__filename));
 function paymentChoosing(client, orderPayloadInstance) {
     orderPayloadInstance.checkoutPhase = fileName // switches control of orderPayloadInstance to current file
 
-    const StepsLeftDesignPattern = '🛒 Escolha → 🛵 Entrega → 💵 *Pagamento*' // As in https://ui-patterns.com/patterns/StepsLeft
+    const StepsLeftDesignPattern = '🛒 Escolha  →  🛵 Entrega  →  💵 *Pagamento*' // As in https://ui-patterns.com/patterns/StepsLeft
 
     // Reset all values of the address object and isTakeOut flag
     function paymentReset () {
