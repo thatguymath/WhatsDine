@@ -27,6 +27,7 @@ function createOrderPayload(client, message, chat, order) {
             this._additionalOrderInformation = '',
             this._isTakeOut = false,
             this._deliveryFee = 0.00
+            this._serviceAproxTime = ''
             this._address = {
                 street: '',
                 number: '',
@@ -36,7 +37,7 @@ function createOrderPayload(client, message, chat, order) {
             },
             this._payment = {
                 method: '',
-                changeForAmmount: ''
+                changeForAmount: ''
             }
         }
         
@@ -76,6 +77,15 @@ function createOrderPayload(client, message, chat, order) {
             this._deliveryFee = value;
         }
 
+        // serviceAproxTime GetSet Pair
+        get serviceAproxTime() {
+            return this._serviceAproxTime;
+        }
+
+        set serviceAproxTime(value) {
+            this._serviceAproxTime = value;
+        }
+
         // address GetSet Pair
         get address() {
             return this._address;
@@ -94,7 +104,7 @@ function createOrderPayload(client, message, chat, order) {
         }
         set payment(value) {
             this._payment.method = value.method;
-            this._payment.changeForAmmount = value.changeForAmmount;
+            this._payment.changeForAmount = value.changeForAmount;
         }
     }
 

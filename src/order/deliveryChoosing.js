@@ -1,6 +1,7 @@
 const messageSender = require('../chatting/messageSender');
 const paymentChoosing = require('./paymentChoosing');
 const BRLFormatter = require('../util/UStoBRLFormatter');
+const travelParametersCalculator = require('../util/travelParamsCalculator');
 
 const path = require('path');
 const fileName = path.basename(__filename, path.extname(__filename));
@@ -21,9 +22,7 @@ function deliveryChoosing(client, orderPayloadInstance) {
     // Buttons constructor
     let buttons_DeliveryMethod = new global.Buttons(
         StepsLeftDesignPattern + '\n\nComo será a entrega do seu pedido?', 
-        [{ body: 'Quero receber no endereço', id: 'courier_delivery' }, { body: 'Quero retirar na loja' , id: 'takeout'}],
-        '', 
-        ''
+        [{ body: 'Quero receber no endereço', id: 'courier_delivery' }, { body: 'Quero retirar na loja' , id: 'takeout'}]
     );
 
     // Call messageSender function to handle message output
@@ -72,12 +71,20 @@ function deliveryChoosing(client, orderPayloadInstance) {
     }
 
     // final confirmation phase
-    function createButtonsFinalConfirmation() { // We need this constructor inside a function to create it only when the user sets activities' inputs
+    async function createButtonsFinalConfirmation() { // We need this constructor inside a function to create it only when the user sets activities' inputs
         deliveryInformation = ''
         if (orderPayloadInstance.isTakeOut) {
             deliveryInformation = `*Forma de Entrega:* Retirada na Loja`
+            orderPayloadInstance.serviceAproxTime = process.env.ESTIMATED_PREPARING_TIME + ' minutos'
         } else {
-            orderPayloadInstance.deliveryFee = process.env.DELIVERY_FEE
+            const travelParameters = await travelParametersCalculator([orderPayloadInstance.address.street, orderPayloadInstance.address.number, orderPayloadInstance.address.cep])
+
+            // sets deliveryFee based on price per kilometer set by the restaurant
+            orderPayloadInstance.deliveryFee = (process.env.PRICE_PER_KILOMETER * parseFloat(travelParameters.distance.replace(',', '.'))).toFixed(2)
+            
+            // sets delivery approximated service time, based on route, traffic and average preparation time set by the restaurant
+            orderPayloadInstance.serviceAproxTime = parseInt(travelParameters.duration) + parseInt(process.env.ESTIMATED_PREPARING_TIME) + ' minutos'
+
             deliveryInformation = `Entrega em: ${orderPayloadInstance.address.street}, Nº ${orderPayloadInstance.address.number}, CEP ${orderPayloadInstance.address.cep}`;
 
             if (orderPayloadInstance.address.additionalAddressInformation) deliveryInformation += `\nObservação: _${orderPayloadInstance.address.additionalAddressInformation}_`
@@ -87,9 +94,7 @@ function deliveryChoosing(client, orderPayloadInstance) {
 
         return new global.Buttons(
             StepsLeftDesignPattern + `\n\n*Confira se está tudo certo com a entrega!*\n\n${deliveryInformation}`, 
-            [{ body: 'Confirmar', id: 'delivery_final_confirm' }, { body: 'Corrigir' , id: 'delivery_final_correct'}],
-            '', 
-            ''
+            [{ body: 'Confirmar', id: 'delivery_final_confirm' }, { body: 'Corrigir' , id: 'delivery_final_correct'}]
         );
     }
 
@@ -116,7 +121,7 @@ function deliveryChoosing(client, orderPayloadInstance) {
                         conversationState = 'waiting_for_address_phase1';
                     } else if (message.selectedButtonId == 'takeout') {
                         orderPayloadInstance.isTakeOut = true;
-                        finalConfirmationMessageParams.content = createButtonsFinalConfirmation()
+                        finalConfirmationMessageParams.content = await createButtonsFinalConfirmation()
                         messageSender(client, finalConfirmationMessageParams)
                         conversationState = 'waiting_for_final_confirmation';
                     }
@@ -145,7 +150,7 @@ function deliveryChoosing(client, orderPayloadInstance) {
                                     messageSender(client, address5MessageParams)
                                     conversationState = 'waiting_for_address_phase5';
                                 } else if (message.selectedButtonId == 'additionalAddressInformation_no') {
-                                    finalConfirmationMessageParams.content = createButtonsFinalConfirmation()
+                                    finalConfirmationMessageParams.content = await createButtonsFinalConfirmation()
                                     messageSender(client, finalConfirmationMessageParams)
                                     conversationState = 'waiting_for_final_confirmation';
                                 }
@@ -153,7 +158,7 @@ function deliveryChoosing(client, orderPayloadInstance) {
 
                                 case 'waiting_for_address_phase5':
                                     orderPayloadInstance.address.additionalAddressInformation = message.body
-                                    finalConfirmationMessageParams.content = createButtonsFinalConfirmation()
+                                    finalConfirmationMessageParams.content = await createButtonsFinalConfirmation()
                                     messageSender(client, finalConfirmationMessageParams)
                                     conversationState = 'waiting_for_final_confirmation';
                                     break;

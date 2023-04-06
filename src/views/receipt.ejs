@@ -104,11 +104,11 @@
           <p>Número: <%= orderPayloadInstance._address.number %></p>
           <p>CEP: <%= orderPayloadInstance._address.cep %></p>
           <p>Informações Adicionais do Endereço: <%= orderPayloadInstance._address.additionalAddressInformation %></p>
-          <p>Taxa de Entrega: <%= orderPayloadInstance._deliveryFee %></p>
+          <p>Taxa de Entrega: R$ <%= orderPayloadInstance._deliveryFee %></p>
           
           <h2>Informações do Pagamento</h2>
           <p>Método de Pagamento: <%= orderPayloadInstance._payment.method %></p>
-          <p>Troco para: <%= orderPayloadInstance._payment.changeForAmount %></p>
+          <p>Troco para: R$ <%= orderPayloadInstance._payment.changeForAmount %></p>
         </div>
       <% } %>
     </body>

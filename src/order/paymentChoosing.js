@@ -27,9 +27,7 @@ function paymentChoosing(client, orderPayloadInstance) {
     // Buttons constructor
     let buttons_DeliveryMethod = new global.Buttons(
         StepsLeftDesignPattern + '\n\n*Como será o pagamento do seu pedido?*', 
-        [{ body: 'Pagar ao receber o pedido', id: 'payment_on_delivery' }, { body: 'Pagar com Pix' , id: 'payment_pix'}, { body: 'Pagar com WhatsApp Pay' , id: 'payment_whatspay'}],
-        '', 
-        ''
+        [{ body: 'Pagar ao receber o pedido', id: 'payment_on_delivery' }, { body: 'Pagar com Pix' , id: 'payment_pix'}, { body: 'Pagar com WhatsApp Pay' , id: 'payment_whatspay'}]
     );
 
     // Call messageSender function to handle message output
@@ -42,9 +40,7 @@ function paymentChoosing(client, orderPayloadInstance) {
     // Buttons constructor
     let buttons_paymentAtDelivery = new global.Buttons(
         StepsLeftDesignPattern + '\n\n*E como será o pagamento na entrega?*', 
-        [{ body: 'Dinheiro', id: 'dinheiro' }, { body: 'Mastercard' , id: 'mastercard'}, { body: 'Visa' , id: 'visa'}],
-        '', 
-        ''
+        [{ body: 'Dinheiro', id: 'dinheiro' }, { body: 'Mastercard' , id: 'mastercard'}, { body: 'Visa' , id: 'visa'}]
     );
 
     // Call messageSender function to handle message output
@@ -55,10 +51,8 @@ function paymentChoosing(client, orderPayloadInstance) {
 
     // Buttons constructor
     let buttons_paymentMoney = new global.Buttons(
-        StepsLeftDesignPattern + '\n\n*Precisa de troco?*', 
-        [{ body: 'Sim, preciso de troco', id: 'payment_money_need_change' }, { body: 'Tenho o valor exato do pedido' , id: 'payment_money_no_change'}],
-        '', 
-        ''
+        StepsLeftDesignPattern + `\n\n*Precisa de troco para seu pedido de R$ ${BRLFormatter(parseFloat(orderPayloadInstance.order.total) + parseFloat(orderPayloadInstance.deliveryFee))}?*`, 
+        [{ body: 'Sim, preciso de troco', id: 'payment_money_need_change' }, { body: 'Tenho o valor exato do pedido' , id: 'payment_money_no_change'}]
     );
 
     // Call messageSender function to handle message output
@@ -83,20 +77,20 @@ function paymentChoosing(client, orderPayloadInstance) {
         deliveryInformation = ''
         if (orderPayloadInstance.isTakeOut) {
             deliveryInformation = `*Forma de Entrega:* Retirada na Loja`
+            deliveryInformation += `\n\nEstimativa de Retirada em ${orderPayloadInstance.serviceAproxTime}`
         } else {
-            orderPayloadInstance.deliveryFee = process.env.DELIVERY_FEE
             deliveryInformation = `Entrega em: ${orderPayloadInstance.address.street}, Nº ${orderPayloadInstance.address.number}, CEP ${orderPayloadInstance.address.cep}`;
 
             if (orderPayloadInstance.address.additionalAddressInformation) deliveryInformation += `\nObservação do Endereço: _${orderPayloadInstance.address.additionalAddressInformation}_`
+
+            deliveryInformation += `\n\nEstimativa de Entrega em ${orderPayloadInstance.serviceAproxTime}`
 
             deliveryInformation += `\n\nTaxa de Entrega: R$ ${BRLFormatter(orderPayloadInstance.deliveryFee)}`
         }
 
         return new global.Buttons(
-            StepsLeftDesignPattern + '\n\n*Este é seu pedido. Podemos confirmar?*\n\n' + `${itemsInfo}${additionalOrderInformation}\n\n${deliveryInformation}\n\nValor do Pedido: R$ ${BRLFormatter(parseFloat(orderPayloadInstance.order.total) + parseFloat(orderPayloadInstance.deliveryFee))}\n\nMétodo de Pagamento: ${orderPayloadInstance.payment.method}`, 
-            [{ body: 'Fazer pedido', id: 'confirm_order' }, { body: 'Alterar forma de pagamento' , id: 'change_payment' }, { body: 'Cancelar pedido' , id: 'cancel_order' }],
-            '', 
-            ''
+            StepsLeftDesignPattern + '\n\n*Este é seu pedido. Podemos confirmar?*\n\n' + `${itemsInfo}\n${additionalOrderInformation}\n\n${deliveryInformation}\n\nValor do Pedido: R$ ${BRLFormatter(parseFloat(orderPayloadInstance.order.total) + parseFloat(orderPayloadInstance.deliveryFee))}\n\nMétodo de Pagamento: ${orderPayloadInstance.payment.method}`, 
+            [{ body: 'Fazer pedido', id: 'confirm_order' }, { body: 'Alterar forma de pagamento' , id: 'change_payment' }, { body: 'Cancelar pedido' , id: 'cancel_order' }]
         );
     }
 
@@ -151,6 +145,7 @@ function paymentChoosing(client, orderPayloadInstance) {
                 case 'waiting_for_money_change_input':
                     paymentFinalConfirmatioMessageParams.content = createButtonsConfirmation()
                     messageSender(client, paymentFinalConfirmatioMessageParams)
+                    orderPayloadInstance.payment.changeForAmount = message.body
                     conversationState = 'waiting_for_order_confirmation';
                     break;
 

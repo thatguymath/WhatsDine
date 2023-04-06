@@ -9,6 +9,7 @@
   "author": "Matheus",
   "license": "ISC",
   "dependencies": {
+    "@googlemaps/google-maps-services-js": "^3.3.28",
     "chalk": "^4.1.2",
     "dotenv": "^16.0.3",
     "ejs": "^3.1.8",
