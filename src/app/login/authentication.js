@@ -1,5 +1,5 @@
 const generateQr = require('./qrHandler');
-const consoleFormatter = require('../util/consoleFormatter');
+const consoleFormatter = require('../../util/consoleFormatter');
 
 function authenticateClient(client) {
     client.on('qr', async (qr) => {

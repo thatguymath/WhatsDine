@@ -1,5 +1,5 @@
 const express = require('express');
-const consoleFormatter = require('../util/consoleFormatter');
+const consoleFormatter = require('../../util/consoleFormatter');
 const path = require('path');
 
 function receipt(orderPayloadInstance) {

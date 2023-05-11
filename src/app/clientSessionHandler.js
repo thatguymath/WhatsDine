@@ -4,7 +4,7 @@ global.LocalAuth = LocalAuth;
 global.Buttons = Buttons;
 global.List = List;
 
-const consoleFormatter = require('./util/consoleFormatter');
+const consoleFormatter = require('../util/consoleFormatter');
 const authentication = require('./login/authentication');
 const userInputHandler = require('./chatting/userInputHandler');
 

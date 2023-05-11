@@ -1,7 +1,7 @@
 const messageSender = require('../chatting/messageSender');
 const paymentChoosing = require('./paymentChoosing');
-const BRLFormatter = require('../util/UStoBRLFormatter');
-const travelParametersCalculator = require('../util/travelParamsCalculator');
+const BRLFormatter = require('../../util/UStoBRLFormatter');
+const travelParametersCalculator = require('../../util/travelParamsCalculator');
 
 const path = require('path');
 const fileName = path.basename(__filename, path.extname(__filename));
@@ -81,6 +81,9 @@ function deliveryChoosing(client, orderPayloadInstance) {
 
             // sets deliveryFee based on price per kilometer set by the restaurant
             orderPayloadInstance.deliveryFee = (process.env.PRICE_PER_KILOMETER * parseFloat(travelParameters.distance.replace(',', '.'))).toFixed(2)
+
+            // sets totalValue for future payment
+            orderPayloadInstance.payment.totalValue = (parseFloat(orderPayloadInstance.order.itemsTotal) + parseFloat(orderPayloadInstance.deliveryFee)).toFixed(2)
             
             // sets delivery approximated service time, based on route, traffic and average preparation time set by the restaurant
             orderPayloadInstance.serviceAproxTime = parseInt(travelParameters.duration) + parseInt(process.env.ESTIMATED_PREPARING_TIME) + ' minutos'

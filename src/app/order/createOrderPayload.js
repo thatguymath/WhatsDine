@@ -7,14 +7,14 @@ function createOrderPayload(client, message, chat, order) {
 
     class orderPayload {
         constructor(message, chat, order) {
+            this.cartOrderId = message.orderId,
             this.checkoutPhase = fileName,
             this.userId = message.from/* .split('@')[0] */,
             this.name = message._data?.notifyName,
             this._cpf = '',
             this.order = {
-                id: message.orderId,
-                createdAt: new Date(order.createdAt),
-                total: new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 2 }).format(order.total/1000),
+                createdAt: new Date(1000*order.createdAt), // UNIX' secs epoch to Javascript millisecs epoch
+                itemsTotal: new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 2 }).format(order.total/1000),
                 items: order.products.map( product => {
                     return {
                         id: product.id,
@@ -36,8 +36,10 @@ function createOrderPayload(client, message, chat, order) {
                 cep: ''
             },
             this._payment = {
+                totalValue: '',
                 method: '',
-                changeForAmount: ''
+                changeForAmount: '',
+                pixTxId: ''
             }
         }
         
@@ -103,8 +105,10 @@ function createOrderPayload(client, message, chat, order) {
             return this._payment;
         }
         set payment(value) {
+            this._payment.totalValue = value.totalValue;
             this._payment.method = value.method;
             this._payment.changeForAmount = value.changeForAmount;
+            this._payment.pixTxId = value.pixTxId;
         }
     }
 

@@ -1,4 +1,4 @@
 require('dotenv').config();
 
-const spawnNewClient = require('./src/clientSessionHandler');
+const spawnNewClient = require('./src/app/clientSessionHandler');
 spawnNewClient();

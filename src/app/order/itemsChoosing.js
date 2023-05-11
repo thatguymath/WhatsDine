@@ -1,6 +1,6 @@
 const messageSender = require('../chatting/messageSender');
 const deliveryChoosing = require('./deliveryChoosing');
-const BRLFormatter = require('../util/UStoBRLFormatter')
+const BRLFormatter = require('../../util/UStoBRLFormatter')
 
 const path = require('path');
 const fileName = path.basename(__filename, path.extname(__filename));
@@ -35,15 +35,15 @@ function itemsChoosing(client, orderPayloadInstance) {
     // confirmation phase
     function createButtonsConfirmation() { // We need this constructor inside a function to create it only when the user sets additionalOrderInformation or not
         let itemsInfo = orderPayloadInstance.order.items.map(entry => `${entry.quantity} × ${entry.name} | R$ ${BRLFormatter(entry.price * entry.quantity)}`).join('\n');
-        let totalPrice = BRLFormatter(orderPayloadInstance.order.total)
+        let itemsTotalPrice = BRLFormatter(orderPayloadInstance.order.itemsTotal)
         let additionalOrderInformation = ''
         if (orderPayloadInstance.additionalOrderInformation) additionalOrderInformation = `\n\nObservação: "_${orderPayloadInstance.additionalOrderInformation}_"`
 
         return new global.Buttons(
-            StepsLeftDesignPattern + `\n\n*Aqui está um resumo do seu pedido!*\n\n${itemsInfo}${additionalOrderInformation}\n\nTotal: R$ ${totalPrice}`, 
+            StepsLeftDesignPattern + `\n\n*Aqui está um resumo do seu pedido!*\n\n${itemsInfo}${additionalOrderInformation}\n\nTotal: R$ ${itemsTotalPrice}`, 
             [{ body: 'Confirmar', id: 'items_final_confirm' }, { body: 'Cancelar' , id: 'delivery_final_cancel'}],
             '', 
-            'Caso queira alterar seu pedido, é necessário cancelar e adicionar os itens ao carrinho.'
+            'Caso queira alterar seu pedido, é necessário cancelar e fazer as alterações no carrinho de itens.'
         );
     }
 

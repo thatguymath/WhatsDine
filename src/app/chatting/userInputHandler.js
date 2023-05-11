@@ -1,4 +1,4 @@
-const consoleFormatter = require('../util/consoleFormatter');
+const consoleFormatter = require('../../util/consoleFormatter');
 const createOrderPayload = require('../order/createOrderPayload');
 
 function userInputHandler(client) {
