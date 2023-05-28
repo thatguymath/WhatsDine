@@ -84,7 +84,7 @@ function paymentChoosing(client, orderPayloadInstance) {
     // Pix payment info phase 1
     let pixPaymentInfo1MessageParams = {
         userId: orderPayloadInstance.userId, 
-        content: StepsLeftDesignPattern + '\n\nCerto, agora escaneie o QR Code abaixo ou copie o código Pix e realize o pagamento.\nEste código ficará disponível por 15 minutos!'
+        content: StepsLeftDesignPattern + '\n\nEscaneie o QR Code abaixo ou copie o código Pix para realizar o pagamento.\nEste código ficará disponível por 15 minutos!'
     }
 
     // Pix payment info phase 2
@@ -148,10 +148,10 @@ function paymentChoosing(client, orderPayloadInstance) {
                         messageSender(client, payOnDeliveryMessageParams)
                         conversationState = 'waiting_for_payment_on_delivery';
                     } else if (message.selectedButtonId == 'payment_pix') {
-                        const pixResponse = await pixHandler.CreatePixCob(orderPayloadInstance.payment.totalValue)
-                        const pixPaymentInfoMessage = createCaptionedQRCodeImage(pixResponse)
-                        messageSender(client, pixPaymentInfo1MessageParams)
-                        messageSender(client, pixPaymentInfoMessage)
+                        orderPayloadInstance.payment.method = 'pix'
+                        paymentFinalConfirmatioMessageParams.content = createButtonsConfirmation()
+                        messageSender(client, paymentFinalConfirmatioMessageParams)
+                        conversationState = 'waiting_for_order_confirmation';
                     }
                     break;
 
@@ -197,6 +197,12 @@ function paymentChoosing(client, orderPayloadInstance) {
 
                 case 'waiting_for_order_confirmation':
                     if (message.selectedButtonId == 'confirm_order') {
+                        if (orderPayloadInstance.payment.method == 'pix'){
+                            const pixResponse = await pixHandler.CreatePixCob(orderPayloadInstance.payment.totalValue)
+                            const pixPaymentInfoMessage = createCaptionedQRCodeImage(pixResponse)
+                            messageSender(client, pixPaymentInfo1MessageParams)
+                            messageSender(client, pixPaymentInfoMessage)
+                        }
                         receipt(orderPayloadInstance)
                         conversationState = 'payment_finished';
                     } else if (message.selectedButtonId == 'change_payment') {
