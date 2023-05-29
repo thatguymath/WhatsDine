@@ -4,12 +4,12 @@ moment.tz.setDefault('America/Sao_Paulo');
 
 const client = new Client({});
 
-function calculateTravelParameters(destination) {
+function calculateTravelParameters(street, number, cep) {
     return new Promise((resolve, reject) => {
         client.distancematrix({
         params: {
             origins: [process.env.RESTAURANT_ADDRESS],
-            destinations: destination,
+            destinations: [[street, number, cep].join(', ')],
             units: 'metric',
             traffic_model: 'best_guess',
             language: 'pt-BR',
@@ -19,6 +19,12 @@ function calculateTravelParameters(destination) {
         timeout: 1000, // milliseconds
         })
         .then((response) => {
+            const status = response.data.rows[0].elements[0].status
+
+            if (status == 'NOT_FOUND') resolve({ status: status })
+
+            const recommendedAddress = response.data.destination_addresses[0]
+
             const distance = response.data.rows[0].elements[0].distance.text;
 
             const durationWithTraffic = response.data.rows[0].elements[0].duration_in_traffic.text;
@@ -26,7 +32,7 @@ function calculateTravelParameters(destination) {
 
             const duration = durationWithTraffic ? durationWithTraffic : durationWithoutTraffic
 
-            resolve ({ distance: distance, duration: duration })
+            resolve ({ status: status, distance: distance, duration: duration, recommendedAddress: recommendedAddress })
         })
         .catch((err) => {
             reject(err);

@@ -22,24 +22,30 @@ function createOrderPayload(client, message, chat, order) {
                         quantity: product.quantity,
                         price: new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 2 }).format(product.price/1000)
                     }
-                })
+                }),
+                _additionalOrderInformation: ''
             },
-            this._additionalOrderInformation = '',
-            this._isTakeOut = false,
-            this._deliveryFee = 0.00
-            this._serviceAproxTime = ''
-            this._address = {
-                street: '',
-                number: '',
-                additionalAddressInformation: '',
-                city: '',
-                cep: ''
+            this.delivery = {
+                _isTakeOut: false,
+                _serviceAproxTime: '',
+                _deliveryFee: 0.00,
+                _address: {
+                    street: '',
+                    number: '',
+                    cep: '',
+                    fullAddress: '',
+                    additionalAddressInformation: '',
+                    distance: '',
+                    travelTime: ''
+                }
             },
-            this._payment = {
-                totalValue: '',
-                method: '',
-                changeForAmount: '',
-                pixTxId: ''
+            this.payment = {
+                _totalValue: '',
+                info: {
+                    _method: '',
+                    _changeForAmount: '',
+                    _pixTxId: ''
+                }
             }
         }
         
@@ -54,61 +60,84 @@ function createOrderPayload(client, message, chat, order) {
 
         // additionalOrderInformation GetSet Pair
         get additionalOrderInformation() {
-            return this._additionalOrderInformation;
+            return this.order._additionalOrderInformation;
         }
 
         set additionalOrderInformation(value) {
-            this._additionalOrderInformation = value;
+            this.order._additionalOrderInformation = value;
         }
 
         // isTakeOut GetSet Pair
         get isTakeOut() {
-            return this._isTakeOut;
+            return this.delivery._isTakeOut;
         }
 
         set isTakeOut(value) {
-            this._isTakeOut = value;
-        }
-
-        // deliveryFee GetSet Pair
-        get deliveryFee() {
-            return this._deliveryFee;
-        }
-
-        set deliveryFee(value) {
-            this._deliveryFee = value;
+            this.delivery._isTakeOut = value;
         }
 
         // serviceAproxTime GetSet Pair
         get serviceAproxTime() {
-            return this._serviceAproxTime;
+            return this.delivery._serviceAproxTime;
         }
 
         set serviceAproxTime(value) {
-            this._serviceAproxTime = value;
+            this.delivery._serviceAproxTime = value;
+        }
+
+        // deliveryFee GetSet Pair
+        get deliveryFee() {
+            return this.delivery._deliveryFee;
+        }
+
+        set deliveryFee(value) {
+            this.delivery._deliveryFee = value;
         }
 
         // address GetSet Pair
         get address() {
-            return this._address;
+            return this.delivery._address;
         }
-        set address(newAddress) {
-            this._address.street = newAddress.street;
-            this._address.number = newAddress.number;
-            this._address.additionalAddressInformation = newAddress.additionalAddressInformation;
-            this._address.city = newAddress.city;
-            this._address.cep = newAddress.cep;
+        set address(value) {
+            this.delivery._address.street = value.street;
+            this.delivery._address.number = value.number;
+            this.delivery._address.cep = value.cep;
+            this.delivery._address.fullAddress = value.fullAddress;
+            this.delivery._address.additionalAddressInformation = value.additionalAddressInformation;
+            this.delivery._address.distance = value.distance;
+            this.delivery._address.travelTime = value.travelTime;
         }
 
         // payment GetSet Pair
-        get payment() {
-            return this._payment;
+        get totalValue() {
+            return this.payment._totalValue;
         }
-        set payment(value) {
-            this._payment.totalValue = value.totalValue;
-            this._payment.method = value.method;
-            this._payment.changeForAmount = value.changeForAmount;
-            this._payment.pixTxId = value.pixTxId;
+        set totalValue(value) {
+            this.payment._totalValue = value;
+        }
+
+        // payment method GetSet Pair
+        get method() {
+            return this.payment.info._method;
+        }
+        set method(value) {
+            this.payment.info._method = value;
+        }
+
+        // payment changeForAmount GetSet Pair
+        get changeForAmount() {
+            return this.payment.info._changeForAmount;
+        }
+        set changeForAmount(value) {
+            this.payment.info._changeForAmount = value;
+        }
+
+        // payment pixTxId GetSet Pair
+        get pixTxId() {
+            return this.payment.info._pixTxId;
+        }
+        set pixTxId(value) {
+            this.payment.info._pixTxId = value;
         }
     }
 

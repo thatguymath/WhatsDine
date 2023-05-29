@@ -12,7 +12,7 @@ function itemsChoosing(client, orderPayloadInstance) {
 
     // Buttons constructor
     let buttons_AdditionalOrderInformation = new global.Buttons(
-        StepsLeftDesignPattern + '\n\nDeseja adicionar alguma informação ao seu pedido?', 
+        StepsLeftDesignPattern + '\n\nDeseja adicionar alguma observação ao seu pedido?', 
         [{ body: 'Adicionar observação', id: 'additionalOrderInformation_yes' }, { body: 'Continuar pedido' , id: 'additionalOrderInformation_no'}],
         '', 
         'Retirar ingredientes, ponto da carne...'
@@ -29,7 +29,7 @@ function itemsChoosing(client, orderPayloadInstance) {
     // additionalOrderInformation phase
     let additionalOrderInformationMessageParams = {
         userId: orderPayloadInstance.userId, 
-        content: 'Certo! Adicione suas observações abaixo:'
+        content: 'Certo! Quais são suas observações para o pedido?'
     }
 
     // confirmation phase
@@ -41,9 +41,9 @@ function itemsChoosing(client, orderPayloadInstance) {
 
         return new global.Buttons(
             StepsLeftDesignPattern + `\n\n*Aqui está um resumo do seu pedido!*\n\n${itemsInfo}${additionalOrderInformation}\n\nTotal: R$ ${itemsTotalPrice}`, 
-            [{ body: 'Confirmar', id: 'items_final_confirm' }, { body: 'Cancelar' , id: 'delivery_final_cancel'}],
+            [{ body: 'Confirmar', id: 'confirm_items' }, { body: 'Cancelar' , id: 'cancel_order'}],
             '', 
-            'Caso queira alterar seu pedido, é necessário cancelar e fazer as alterações no carrinho de itens.'
+            'Caso queira alterar seu pedido, é necessário cancelar e fazer as alterações no carrinho de itens!'
         );
     }
 
@@ -65,12 +65,12 @@ function itemsChoosing(client, orderPayloadInstance) {
     }
 
     // Handler of message events for 'itemsChoosing Activity', with state machine approach
-    let conversationState = 'items_start';
+    let conversationState = 'start_items';
 
     client.on('message', async message => {
         if (message.from == orderPayloadInstance.userId && orderPayloadInstance.checkoutPhase == fileName) { //fileName is used as control, so state machine interactions only works in one checkoutPhase at a time
             switch(conversationState) {
-                case 'items_start':
+                case 'start_items':
                     if (message.selectedButtonId == 'additionalOrderInformation_yes') {
                         messageSender(client, additionalOrderInformationMessageParams)
                         conversationState = 'waiting_for_additionalOrderInformation';
@@ -91,17 +91,17 @@ function itemsChoosing(client, orderPayloadInstance) {
                     break;
 
                 case 'waiting_for_final_items_confirmation':
-                    if (message.selectedButtonId == 'items_final_confirm') {
+                    if (message.selectedButtonId == 'confirm_items') {
                         deliveryChoosing(client, orderPayloadInstance)
-                        conversationState = 'items_finished';
-                    } else if (message.selectedButtonId == 'delivery_final_cancel') {
+                        conversationState = 'finish_items';
+                    } else if (message.selectedButtonId == 'cancel_order') {
                         messageSender(client, cancelledMessageParams)
-                        conversationState = 'items_finished';
+                        conversationState = 'finish_items';
                         return;
                     }
                     break;
 
-                case 'items_finished':
+                case 'finish_items':
                     //messageSender(client, finishedMessageParams)
                     break;
 

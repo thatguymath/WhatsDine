@@ -88,27 +88,27 @@
               <td colspan="3" style="text-align:right; font-weight:bold;">Total dos Itens: R$ <%= orderPayloadInstance.order.total %></td>
             </tr>
             <tr>
-              <td colspan="3" style="text-align:left; font-weight:bold;">Informações Adicionais do Pedido: <%= orderPayloadInstance._additionalOrderInformation %></td>
+              <td colspan="3" style="text-align:left; font-weight:bold;">Informações Adicionais do Pedido: <%= orderPayloadInstance.additionalOrderInformation %></td>
             </tr>
           </tbody>
         </table> 
       </div>
-      <% if (orderPayloadInstance._isTakeOut) { %>
+      <% if (orderPayloadInstance.isTakeOut) { %>
         <div class="delivery-info">
           <h2>Retirada</h2>
         </div>
       <% } else { %>
         <div class="delivery-info">
           <h2>Informações da Entrega</h2>
-          <p>Logradouro: <%= orderPayloadInstance._address.street %></p>
-          <p>Número: <%= orderPayloadInstance._address.number %></p>
-          <p>CEP: <%= orderPayloadInstance._address.cep %></p>
-          <p>Informações Adicionais do Endereço: <%= orderPayloadInstance._address.additionalAddressInformation %></p>
-          <p>Taxa de Entrega: R$ <%= orderPayloadInstance._deliveryFee %></p>
+          <p>Logradouro: <%= orderPayloadInstance.address.street %></p>
+          <p>Número: <%= orderPayloadInstance.address.number %></p>
+          <p>CEP: <%= orderPayloadInstance.address.cep %></p>
+          <p>Informações Adicionais do Endereço: <%= orderPayloadInstance.address.additionalAddressInformation %></p>
+          <p>Taxa de Entrega: R$ <%= orderPayloadInstance.deliveryFee %></p>
           
           <h2>Informações do Pagamento</h2>
-          <p>Método de Pagamento: <%= orderPayloadInstance._payment.method %></p>
-          <p>Troco para: R$ <%= orderPayloadInstance._payment.changeForAmount %></p>
+          <p>Método de Pagamento: <%= orderPayloadInstance..method %></p>
+          <p>Troco para: R$ <%= orderPayloadInstance.changeForAmount %></p>
         </div>
       <% } %>
     </body>

@@ -14,21 +14,14 @@ function paymentChoosing(client, orderPayloadInstance) {
 
     // Reset all values of the payment object
     function paymentReset () {
-        Object.keys(orderPayloadInstance.payment).forEach(key => {
-            orderPayloadInstance.payment[key] = '';
+        Object.keys(orderPayloadInstance.payment.info).forEach(key => {
+            orderPayloadInstance.payment.info[key] = '';
         });
     }
 
-    const paymentMethodsButtons = process.env.PAY_ON_DELIVERY_METHODS.split(", ").map(element => {
-        return {
-          body: element,
-          id: `${element.toLowerCase()}`
-        };
-    });
-
     // Buttons constructor
     let buttons_DeliveryMethod = new global.Buttons(
-        StepsLeftDesignPattern + '\n\n*Como será o pagamento do seu pedido?*', 
+        StepsLeftDesignPattern + '\n\nComo será o pagamento do seu pedido?', 
         [{ body: 'Pagar ao receber, via Cartão ou Dinheiro', id: 'payment_on_delivery' }, { body: 'Pagar com Pix' , id: 'payment_pix'}]
     );
 
@@ -41,7 +34,7 @@ function paymentChoosing(client, orderPayloadInstance) {
 
     // Buttons constructor
     let buttons_paymentAtDelivery = new global.Buttons(
-        StepsLeftDesignPattern + '\n\n*E como será o pagamento ao receber seu pedido?*', 
+        StepsLeftDesignPattern + '\n\nE como será o pagamento ao receber seu pedido?', 
         [{ body: 'Dinheiro', id: 'dinheiro' }, { body: 'Mastercard' , id: 'mastercard'}, { body: 'Visa' , id: 'visa'}]
     );
 
@@ -53,7 +46,7 @@ function paymentChoosing(client, orderPayloadInstance) {
 
     // Buttons constructor
     let buttons_paymentCreditOrDebit = new global.Buttons(
-        StepsLeftDesignPattern + '\n\n*Vai ser no Crédito ou no Débito?*', 
+        StepsLeftDesignPattern + '\n\nVai ser no Crédito ou no Débito?', 
         [{ body: 'Débito' , id: 'debito'}, { body: 'Crédito' , id: 'credito'}]
     );
 
@@ -65,7 +58,7 @@ function paymentChoosing(client, orderPayloadInstance) {
 
     // Buttons constructor
     let buttons_paymentMoney = new global.Buttons(
-        StepsLeftDesignPattern + `\n\n*Precisa de troco para seu pedido de R$ ${BRLFormatter(orderPayloadInstance.payment.totalValue)}?*`, 
+        StepsLeftDesignPattern + `\n\nPrecisa de troco para seu pedido de R$ ${BRLFormatter(orderPayloadInstance.totalValue)}?`, 
         [{ body: 'Sim, preciso de troco', id: 'payment_money_need_change' }, { body: 'Tenho o valor exato do pedido' , id: 'payment_money_no_change'}]
     );
 
@@ -102,7 +95,7 @@ function paymentChoosing(client, orderPayloadInstance) {
         let itemsInfo = orderPayloadInstance.order.items.map(entry => `${entry.quantity} × ${entry.name} | R$ ${BRLFormatter(entry.price * entry.quantity)}`).join('\n');
         let totalPrice = BRLFormatter(orderPayloadInstance.order.itemsTotal)
         let additionalOrderInformation = ''
-        if (orderPayloadInstance.additionalOrderInformation) additionalOrderInformation = `\n\nObservação do Pedido: "_${orderPayloadInstance.additionalOrderInformation}_"`
+        if (orderPayloadInstance.additionalOrderInformation) additionalOrderInformation = `\nObservação do Pedido: "_${orderPayloadInstance.additionalOrderInformation}_"`
 
         deliveryInformation = ''
         if (orderPayloadInstance.isTakeOut) {
@@ -110,18 +103,18 @@ function paymentChoosing(client, orderPayloadInstance) {
             deliveryInformation += `\nSeu pedido deve ser retirado em ${process.env.RESTAURANT_ADDRESS}`
             deliveryInformation += `\n\nEstimativa de Retirada em ${orderPayloadInstance.serviceAproxTime}`
         } else {
-            deliveryInformation = `Entrega em: ${orderPayloadInstance.address.street}, Nº ${orderPayloadInstance.address.number}, CEP ${orderPayloadInstance.address.cep}`;
+            deliveryInformation = `Entrega em: _${orderPayloadInstance.address.fullAddress}_`;
 
-            if (orderPayloadInstance.address.additionalAddressInformation) deliveryInformation += `\nObservação do Endereço: _${orderPayloadInstance.address.additionalAddressInformation}_`
-
+            if (orderPayloadInstance.address.additionalAddressInformation) deliveryInformation += `\nInformação do Endereço: _${orderPayloadInstance.address.additionalAddressInformation}_`
+            
             deliveryInformation += `\n\nEstimativa de Entrega em ${orderPayloadInstance.serviceAproxTime}`
 
             deliveryInformation += `\n\nTaxa de Entrega: R$ ${BRLFormatter(orderPayloadInstance.deliveryFee)}`
         }
 
         return new global.Buttons(
-            StepsLeftDesignPattern + '\n\n*Este é seu pedido. Podemos confirmar?*\n\n' + `${itemsInfo}\n${additionalOrderInformation}\n\n${deliveryInformation}\n\nValor do Pedido: R$ ${BRLFormatter(orderPayloadInstance.payment.totalValue)}\n\nMétodo de Pagamento: ${orderPayloadInstance.payment.method}`, 
-            [{ body: 'Fazer pedido', id: 'confirm_order' }, { body: 'Alterar forma de pagamento' , id: 'change_payment' }, { body: 'Cancelar pedido' , id: 'cancel_order' }]
+            StepsLeftDesignPattern + '\n\n*Este é seu pedido. Podemos confirmar?*\n\n' + `${itemsInfo}${additionalOrderInformation}\n\n${deliveryInformation}\n\nValor do Pedido: R$ ${BRLFormatter(orderPayloadInstance.totalValue)}\n\nMétodo de Pagamento: ${orderPayloadInstance.method}`, 
+            [{ body: 'Fazer pedido', id: 'confirm_order' }, { body: 'Alterar forma de pagamento' , id: 'reset_payment' }, { body: 'Cancelar pedido' , id: 'cancel_order' }]
         );
     }
 
@@ -138,17 +131,17 @@ function paymentChoosing(client, orderPayloadInstance) {
     }
 
     // Handler of message events for 'paymentChoosing Activity', with state machine approach
-    let conversationState = 'payment_start';
+    let conversationState = 'start_payment';
 
     client.on('message', async message => {
         if (message.from == orderPayloadInstance.userId && orderPayloadInstance.checkoutPhase == fileName) { //fileName is used as control, so state machine interactions only works in one checkoutPhase at a time
             switch(conversationState) {
-                case 'payment_start':
+                case 'start_payment':
                     if (message.selectedButtonId == 'payment_on_delivery') {
                         messageSender(client, payOnDeliveryMessageParams)
                         conversationState = 'waiting_for_payment_on_delivery';
                     } else if (message.selectedButtonId == 'payment_pix') {
-                        orderPayloadInstance.payment.method = 'pix'
+                        orderPayloadInstance.method = 'pix'
                         paymentFinalConfirmatioMessageParams.content = createButtonsConfirmation()
                         messageSender(client, paymentFinalConfirmatioMessageParams)
                         conversationState = 'waiting_for_order_confirmation';
@@ -156,11 +149,11 @@ function paymentChoosing(client, orderPayloadInstance) {
                     break;
 
                 case 'waiting_for_payment_on_delivery':
-                    orderPayloadInstance.payment.method = message.selectedButtonId
-                    if (orderPayloadInstance.payment.method == 'dinheiro') {
+                    orderPayloadInstance.method = message.selectedButtonId
+                    if (orderPayloadInstance.method == 'dinheiro') {
                         messageSender(client, paymentMoneyMessageParams)
                         conversationState = 'waiting_for_money_change_option';
-                    } else if (orderPayloadInstance.payment.method == 'mastercard' || orderPayloadInstance.payment.method == 'visa') {
+                    } else if (orderPayloadInstance.method == 'mastercard' || orderPayloadInstance.method == 'visa') {
                         messageSender(client, CreditOrDebitMessageParams)
                         conversationState = 'waiting_for_credit_or_debit_choice';
                     } else {
@@ -184,12 +177,12 @@ function paymentChoosing(client, orderPayloadInstance) {
                 case 'waiting_for_money_change_input':
                     paymentFinalConfirmatioMessageParams.content = createButtonsConfirmation()
                     messageSender(client, paymentFinalConfirmatioMessageParams)
-                    orderPayloadInstance.payment.changeForAmount = message.body
+                    orderPayloadInstance.changeForAmount = message.body
                     conversationState = 'waiting_for_order_confirmation';
                     break;
 
                 case 'waiting_for_credit_or_debit_choice':
-                    orderPayloadInstance.payment.method += ' ' + message.selectedButtonId
+                    orderPayloadInstance.method += ' ' + message.selectedButtonId
                     paymentFinalConfirmatioMessageParams.content = createButtonsConfirmation()
                     messageSender(client, paymentFinalConfirmatioMessageParams)
                     conversationState = 'waiting_for_order_confirmation';
@@ -197,26 +190,26 @@ function paymentChoosing(client, orderPayloadInstance) {
 
                 case 'waiting_for_order_confirmation':
                     if (message.selectedButtonId == 'confirm_order') {
-                        if (orderPayloadInstance.payment.method == 'pix'){
-                            const pixResponse = await pixHandler.CreatePixCob(orderPayloadInstance.payment.totalValue)
+                        if (orderPayloadInstance.method == 'pix'){
+                            const pixResponse = await pixHandler.CreatePixCob(orderPayloadInstance.totalValue)
                             const pixPaymentInfoMessage = createCaptionedQRCodeImage(pixResponse)
                             messageSender(client, pixPaymentInfo1MessageParams)
                             messageSender(client, pixPaymentInfoMessage)
                         }
                         receipt(orderPayloadInstance)
-                        conversationState = 'payment_finished';
-                    } else if (message.selectedButtonId == 'change_payment') {
+                        conversationState = 'finish_payment';
+                    } else if (message.selectedButtonId == 'reset_payment') {
                         paymentReset()
                         messageSender(client, introMessageParams)
-                        conversationState = 'payment_start';
+                        conversationState = 'start_payment';
                     } else if (message.selectedButtonId == 'cancel_order') {
                         messageSender(client, cancelledMessageParams)
-                        conversationState = 'payment_finished';
+                        conversationState = 'finish_payment';
                         return;
                     }
                     break;
 
-                case 'payment_finished':
+                case 'finish_payment':
                     //messageSender(client, finishedMessageParams)
                     break;
 
