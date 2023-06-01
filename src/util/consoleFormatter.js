@@ -1,9 +1,8 @@
 const chalk = require('chalk');
-const moment = require('moment-timezone');
-moment.tz.setDefault('America/Sao_Paulo');
+const moment = require('moment');
 
 function formatter(color, header, content) {
-    var logging = `${chalk[color](`[${header}]`)} ${moment().format('DD/MM/YYYY - HH:mm:ss')} | ${content}`;
+    var logging = `${chalk[color](`[${header}]`)} ${moment().format('DD/MM/YYYY HH:mm:ss Z')} | ${content}`;
     return logging;
 }
 

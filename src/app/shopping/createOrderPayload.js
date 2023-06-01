@@ -1,4 +1,4 @@
-const itemsChoosing = require('./itemsChoosing');
+const itemsPhase = require('./itemsPhase');
 
 const path = require('path');
 const fileName = path.basename(__filename, path.extname(__filename));
@@ -44,7 +44,8 @@ function createOrderPayload(client, message, chat, order) {
                 info: {
                     _method: '',
                     _changeForAmount: '',
-                    _pixTxId: ''
+                    _pixTxId: '',
+                    _isPaid: false
                 }
             }
         }
@@ -139,11 +140,19 @@ function createOrderPayload(client, message, chat, order) {
         set pixTxId(value) {
             this.payment.info._pixTxId = value;
         }
+
+        // payment isPaid GetSet Pair
+        get isPaid() {
+            return this.payment.info._isPaid;
+        }
+        set isPaid(value) {
+            this.payment.info._isPaid = value;
+        }
     }
 
     const orderPayloadInstance = new orderPayload(message, chat, order);
     
-    itemsChoosing(client, orderPayloadInstance)
+    itemsPhase(client, orderPayloadInstance)
 }
 
 module.exports = createOrderPayload;

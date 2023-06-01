@@ -2,3 +2,4 @@
 node_modules
 lib/WWebJS/session/*
 src/certificates/*.p12
+src/db/storage/*.db

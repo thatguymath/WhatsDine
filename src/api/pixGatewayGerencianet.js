@@ -10,37 +10,45 @@ const agent = new https.Agent({
 });
 
 const authenticateCredentials = ({ clientID, clientSecret }) => {
-  const credentials = Buffer.from(
-    `${clientID}:${clientSecret}`
-  ).toString('base64');
-
-  return axios({
-    method: 'POST',
-    url: `${process.env.GN_ENDPOINT}/oauth/token`,
-    headers: {
-      Authorization: `Basic ${credentials}`,
-      'Content-Type': 'application/json'
-    },
-    httpsAgent: agent,
-    data: {
-      grant_type: 'client_credentials'
-    }
-  });
+  try {
+    const credentials = Buffer.from(
+      `${clientID}:${clientSecret}`
+    ).toString('base64');
+  
+    return axios({
+      method: 'POST',
+      url: `${process.env.GN_ENDPOINT}/oauth/token`,
+      headers: {
+        Authorization: `Basic ${credentials}`,
+        'Content-Type': 'application/json'
+      },
+      httpsAgent: agent,
+      data: {
+        grant_type: 'client_credentials'
+      }
+    });
+  } catch (err) {
+    console.error(err)
+  }
 };
 
 
 const requestGN_API = async (credentials) => {
-  const authResponse = await authenticateCredentials(credentials);
-  const accessToken = authResponse.data?.access_token;
-
-  return axios.create({
-    baseURL: process.env.GN_ENDPOINT,
-    httpsAgent: agent,
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      'Content-Type': 'application/json'
-    }
-  });
+  try {
+    const authResponse = await authenticateCredentials(credentials);
+    const accessToken = authResponse.data?.access_token;
+  
+    return axios.create({
+      baseURL: process.env.GN_ENDPOINT,
+      httpsAgent: agent,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      }
+    });
+  } catch (err) {
+    console.error(err)
+  }
 }
 
 module.exports = requestGN_API;

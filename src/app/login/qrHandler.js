@@ -1,6 +1,5 @@
 const express = require('express');
 const qr = require('qr-image');
-const consoleFormatter = require('../../util/consoleFormatter');
 
 function generateQr(qrText) {
     const app = express();
@@ -12,7 +11,8 @@ function generateQr(qrText) {
     });
 
     app.listen(process.env.LOCALHOST_PORT, () => {
-        console.log(consoleFormatter('blue', 'LOGIN', `Escaneie o QR Code em http://localhost:${process.env.LOCALHOST_PORT}/qr`))
+        console.log(global.consoleFormatter('yellow', 'LOG', `Com o app de WhatsApp do Restaurante, vá na aba 'Aparelhos conectados' e prepare-se para ler o QR Code.`))
+        console.log(global.consoleFormatter('yellow', 'LOG', `Aperte em 'Adicionar dispositivo', clique neste link: http://localhost:${process.env.LOCALHOST_PORT}/qr e faça a leitura com a câmera.`))
     });
 }
 

@@ -1,5 +1,4 @@
-const consoleFormatter = require('../../util/consoleFormatter');
-const createOrderPayload = require('../order/createOrderPayload');
+const createOrderPayload = require('../shopping/createOrderPayload');
 
 function userInputHandler(client) {
     //Fired after a new message is received

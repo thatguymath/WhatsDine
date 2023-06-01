@@ -1,11 +1,11 @@
 const messageSender = require('../chatting/messageSender');
-const deliveryChoosing = require('./deliveryChoosing');
+const deliveryPhase = require('./deliveryPhase');
 const BRLFormatter = require('../../util/UStoBRLFormatter')
 
 const path = require('path');
 const fileName = path.basename(__filename, path.extname(__filename));
 
-function itemsChoosing(client, orderPayloadInstance) {
+async function itemsPhase(client, orderPayloadInstance) {
     orderPayloadInstance.checkoutPhase = fileName // switches control of orderPayloadInstance to current file
 
     const StepsLeftDesignPattern = '🛒 *Escolha*  →  🛵 Entrega  →  💵 Pagamento' // As in https://ui-patterns.com/patterns/StepsLeft
@@ -23,9 +23,9 @@ function itemsChoosing(client, orderPayloadInstance) {
         userId: orderPayloadInstance.userId, 
         content: buttons_AdditionalOrderInformation
     }
-    messageSender(client, introMessageParams)
+    await messageSender(client, introMessageParams)
 
-    // Parameters that will be used for the state machine interactions of 'itemsChoosing Activity'
+    // Parameters that will be used for the state machine interactions of 'itemsPhase Activity'
     // additionalOrderInformation phase
     let additionalOrderInformationMessageParams = {
         userId: orderPayloadInstance.userId, 
@@ -64,7 +64,7 @@ function itemsChoosing(client, orderPayloadInstance) {
         content: 'Oops! Parece que você já escolheu uma opção desse menu.'
     }
 
-    // Handler of message events for 'itemsChoosing Activity', with state machine approach
+    // Handler of message events for 'itemsPhase Activity', with state machine approach
     let conversationState = 'start_items';
 
     client.on('message', async message => {
@@ -72,11 +72,12 @@ function itemsChoosing(client, orderPayloadInstance) {
             switch(conversationState) {
                 case 'start_items':
                     if (message.selectedButtonId == 'additionalOrderInformation_yes') {
-                        messageSender(client, additionalOrderInformationMessageParams)
+                        await messageSender(client, additionalOrderInformationMessageParams)
                         conversationState = 'waiting_for_additionalOrderInformation';
+                        
                     } else if (message.selectedButtonId == 'additionalOrderInformation_no') {
                         confirmationMessageParams.content = createButtonsConfirmation()
-                        messageSender(client, confirmationMessageParams)
+                        await messageSender(client, confirmationMessageParams)
                         conversationState = 'waiting_for_final_items_confirmation';
                     }
                     break;
@@ -85,24 +86,25 @@ function itemsChoosing(client, orderPayloadInstance) {
                     if (message.type == 'chat') {
                         orderPayloadInstance.additionalOrderInformation = message.body
                         confirmationMessageParams.content = createButtonsConfirmation()
-                        messageSender(client, confirmationMessageParams)
+                        await messageSender(client, confirmationMessageParams)
                         conversationState = 'waiting_for_final_items_confirmation';
                     }
                     break;
 
                 case 'waiting_for_final_items_confirmation':
                     if (message.selectedButtonId == 'confirm_items') {
-                        deliveryChoosing(client, orderPayloadInstance)
+                        deliveryPhase(client, orderPayloadInstance)
                         conversationState = 'finish_items';
+
                     } else if (message.selectedButtonId == 'cancel_order') {
-                        messageSender(client, cancelledMessageParams)
+                        await messageSender(client, cancelledMessageParams)
                         conversationState = 'finish_items';
                         return;
                     }
                     break;
 
                 case 'finish_items':
-                    //messageSender(client, finishedMessageParams)
+                    //await messageSender(client, finishedMessageParams)
                     break;
 
                 default:
@@ -113,4 +115,4 @@ function itemsChoosing(client, orderPayloadInstance) {
     });
 }
 
-module.exports = itemsChoosing;
+module.exports = itemsPhase;

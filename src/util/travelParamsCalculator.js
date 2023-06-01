@@ -1,6 +1,5 @@
 const { Client } = require('@googlemaps/google-maps-services-js');
-const moment = require('moment-timezone');
-moment.tz.setDefault('America/Sao_Paulo');
+const moment = require('moment');
 
 const client = new Client({});
 

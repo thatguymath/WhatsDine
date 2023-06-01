@@ -1,13 +1,13 @@
 const messageSender = require('../chatting/messageSender');
+const { createRecord, readRecord, readOneRecord, updateRecord, deleteRecord } = require('../../db/dbCRUD_Handler');
 const BRLFormatter = require('../../util/UStoBRLFormatter');
-const { MessageMedia } = require('whatsapp-web.js');
 const pixHandler = require('../payment/pixHandler')
 const receipt = require('./receipt');
 
 const path = require('path');
 const fileName = path.basename(__filename, path.extname(__filename));
 
-function paymentChoosing(client, orderPayloadInstance) {
+async function paymentPhase(client, orderPayloadInstance) {
     orderPayloadInstance.checkoutPhase = fileName // switches control of orderPayloadInstance to current file
 
     const StepsLeftDesignPattern = '🛒 Escolha  →  🛵 Entrega  →  💵 *Pagamento*' // As in https://ui-patterns.com/patterns/StepsLeft
@@ -18,6 +18,9 @@ function paymentChoosing(client, orderPayloadInstance) {
             orderPayloadInstance.payment.info[key] = '';
         });
     }
+
+    if (orderPayloadInstance.isTakeOut) orderPayloadInstance.totalValue = parseFloat(orderPayloadInstance.order.itemsTotal)
+    else orderPayloadInstance.totalValue = (parseFloat(orderPayloadInstance.order.itemsTotal) + parseFloat(orderPayloadInstance.deliveryFee)).toFixed(2)
 
     // Buttons constructor
     let buttons_DeliveryMethod = new global.Buttons(
@@ -30,7 +33,7 @@ function paymentChoosing(client, orderPayloadInstance) {
         userId: orderPayloadInstance.userId, 
         content: buttons_DeliveryMethod
     }
-    messageSender(client, introMessageParams)
+    await messageSender(client, introMessageParams)
 
     // Buttons constructor
     let buttons_paymentAtDelivery = new global.Buttons(
@@ -84,7 +87,7 @@ function paymentChoosing(client, orderPayloadInstance) {
     function createCaptionedQRCodeImage (pixObject) {
         let pixPaymentInfo2MessageParams = {
             userId: orderPayloadInstance.userId, 
-            content: new MessageMedia('image/png', pixObject.qrcodeImg.split(',')[1]),
+            content: new global.MessageMedia('image/png', pixObject.qrcodeImg.split(',')[1]),
             options: { caption: pixObject.qrcode }
         }
         return pixPaymentInfo2MessageParams
@@ -130,7 +133,7 @@ function paymentChoosing(client, orderPayloadInstance) {
         content: 'Seu pedido foi cancelado.'
     }
 
-    // Handler of message events for 'paymentChoosing Activity', with state machine approach
+    // Handler of message events for 'paymentPhase Activity', with state machine approach
     let conversationState = 'start_payment';
 
     client.on('message', async message => {
@@ -138,12 +141,13 @@ function paymentChoosing(client, orderPayloadInstance) {
             switch(conversationState) {
                 case 'start_payment':
                     if (message.selectedButtonId == 'payment_on_delivery') {
-                        messageSender(client, payOnDeliveryMessageParams)
+                        await messageSender(client, payOnDeliveryMessageParams)
                         conversationState = 'waiting_for_payment_on_delivery';
+                        
                     } else if (message.selectedButtonId == 'payment_pix') {
                         orderPayloadInstance.method = 'pix'
                         paymentFinalConfirmatioMessageParams.content = createButtonsConfirmation()
-                        messageSender(client, paymentFinalConfirmatioMessageParams)
+                        await messageSender(client, paymentFinalConfirmatioMessageParams)
                         conversationState = 'waiting_for_order_confirmation';
                     }
                     break;
@@ -151,32 +155,35 @@ function paymentChoosing(client, orderPayloadInstance) {
                 case 'waiting_for_payment_on_delivery':
                     orderPayloadInstance.method = message.selectedButtonId
                     if (orderPayloadInstance.method == 'dinheiro') {
-                        messageSender(client, paymentMoneyMessageParams)
+                        await messageSender(client, paymentMoneyMessageParams)
                         conversationState = 'waiting_for_money_change_option';
+
                     } else if (orderPayloadInstance.method == 'mastercard' || orderPayloadInstance.method == 'visa') {
-                        messageSender(client, CreditOrDebitMessageParams)
+                        await messageSender(client, CreditOrDebitMessageParams)
                         conversationState = 'waiting_for_credit_or_debit_choice';
+
                     } else {
                         paymentFinalConfirmatioMessageParams.content = createButtonsConfirmation()
-                        messageSender(client, paymentFinalConfirmatioMessageParams)
+                        await messageSender(client, paymentFinalConfirmatioMessageParams)
                         conversationState = 'waiting_for_order_confirmation';
                     }
                     break;
 
                 case 'waiting_for_money_change_option':
                     if (message.selectedButtonId == 'payment_money_need_change') {
-                        messageSender(client, moneyChangeUserInputMessageParams)
+                        await messageSender(client, moneyChangeUserInputMessageParams)
                         conversationState = 'waiting_for_money_change_input';
+                        
                     } else if (message.selectedButtonId == 'payment_money_no_change'){
                         paymentFinalConfirmatioMessageParams.content = createButtonsConfirmation()
-                        messageSender(client, paymentFinalConfirmatioMessageParams)
+                        await messageSender(client, paymentFinalConfirmatioMessageParams)
                         conversationState = 'waiting_for_order_confirmation';
                     }
                     break;
 
                 case 'waiting_for_money_change_input':
                     paymentFinalConfirmatioMessageParams.content = createButtonsConfirmation()
-                    messageSender(client, paymentFinalConfirmatioMessageParams)
+                    await messageSender(client, paymentFinalConfirmatioMessageParams)
                     orderPayloadInstance.changeForAmount = message.body
                     conversationState = 'waiting_for_order_confirmation';
                     break;
@@ -184,33 +191,39 @@ function paymentChoosing(client, orderPayloadInstance) {
                 case 'waiting_for_credit_or_debit_choice':
                     orderPayloadInstance.method += ' ' + message.selectedButtonId
                     paymentFinalConfirmatioMessageParams.content = createButtonsConfirmation()
-                    messageSender(client, paymentFinalConfirmatioMessageParams)
+                    await messageSender(client, paymentFinalConfirmatioMessageParams)
                     conversationState = 'waiting_for_order_confirmation';
                     break;
 
                 case 'waiting_for_order_confirmation':
                     if (message.selectedButtonId == 'confirm_order') {
-                        if (orderPayloadInstance.method == 'pix'){
+                        if (orderPayloadInstance.method == 'pix') {
                             const pixResponse = await pixHandler.CreatePixCob(orderPayloadInstance.totalValue)
+                            orderPayloadInstance.pixTxId = pixResponse.txId
                             const pixPaymentInfoMessage = createCaptionedQRCodeImage(pixResponse)
-                            messageSender(client, pixPaymentInfo1MessageParams)
-                            messageSender(client, pixPaymentInfoMessage)
+
+                            await messageSender(client, pixPaymentInfo1MessageParams)
+                            await messageSender(client, pixPaymentInfoMessage)
                         }
-                        receipt(orderPayloadInstance)
+                        await createRecord('orders', orderPayloadInstance)
+                        console.log(global.consoleFormatter('gray', 'LOG', `${orderPayloadInstance.userId} (${orderPayloadInstance.name}) finalizou o checkout do pedido ${orderPayloadInstance.cartOrderId}`))
+                        //receipt(orderPayloadInstance)
                         conversationState = 'finish_payment';
+
                     } else if (message.selectedButtonId == 'reset_payment') {
                         paymentReset()
-                        messageSender(client, introMessageParams)
+                        await messageSender(client, introMessageParams)
                         conversationState = 'start_payment';
+
                     } else if (message.selectedButtonId == 'cancel_order') {
-                        messageSender(client, cancelledMessageParams)
+                        await messageSender(client, cancelledMessageParams)
                         conversationState = 'finish_payment';
                         return;
                     }
                     break;
 
                 case 'finish_payment':
-                    //messageSender(client, finishedMessageParams)
+                    //await messageSender(client, finishedMessageParams)
                     break;
 
                 default:
@@ -221,4 +234,4 @@ function paymentChoosing(client, orderPayloadInstance) {
     })
 }
 
-module.exports = paymentChoosing;
+module.exports = paymentPhase;

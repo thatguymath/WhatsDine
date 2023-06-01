@@ -1,5 +1,5 @@
 const messageSender = require('../chatting/messageSender');
-const paymentChoosing = require('./paymentChoosing');
+const paymentPhase = require('./paymentPhase');
 const BRLFormatter = require('../../util/UStoBRLFormatter');
 const travelParametersCalculator = require('../../util/travelParamsCalculator');
 
@@ -7,7 +7,7 @@ const path = require('path');
 const { ok } = require('assert');
 const fileName = path.basename(__filename, path.extname(__filename));
 
-function deliveryChoosing(client, orderPayloadInstance) {
+async function deliveryPhase(client, orderPayloadInstance) {
     orderPayloadInstance.checkoutPhase = fileName // switches control of orderPayloadInstance to current file
 
     const StepsLeftDesignPattern = '🛒 Escolha  →  🛵 *Entrega*  →  💵 Pagamento' // As in https://ui-patterns.com/patterns/StepsLeft
@@ -41,7 +41,7 @@ function deliveryChoosing(client, orderPayloadInstance) {
         userId: orderPayloadInstance.userId, 
         content: buttons_DeliveryMethod
     } 
-    messageSender(client, introMessageParams)
+    await messageSender(client, introMessageParams)
 
     // address phase 1
     let address1MessageParams = {
@@ -137,18 +137,14 @@ function deliveryChoosing(client, orderPayloadInstance) {
     // final confirmation phase
     async function createButtonsFinalConfirmation() { // We need this constructor inside a function to create it only when user sets activities' inputs
         deliveryInformation = ''
-        if (orderPayloadInstance.isTakeOut) {
-            // sets totalValue for future payment
-            orderPayloadInstance.totalValue = parseFloat(orderPayloadInstance.order.itemsTotal)
 
+        if (orderPayloadInstance.isTakeOut) {
             deliveryInformation = `*Forma de Entrega:* Retirada na Loja`
             orderPayloadInstance.serviceAproxTime = process.env.ESTIMATED_PREPARING_TIME + ' minutos'
+            
         } else {
             // sets deliveryFee based on price per kilometer set by the restaurant
             orderPayloadInstance.deliveryFee = (process.env.PRICE_PER_KILOMETER * orderPayloadInstance.address.distance).toFixed(2)
-
-            // sets totalValue for future payment
-            orderPayloadInstance.totalValue = (parseFloat(orderPayloadInstance.order.itemsTotal) + parseFloat(orderPayloadInstance.deliveryFee)).toFixed(2)
             
             // sets delivery approximated service time, based on route, traffic and average preparation time set by the restaurant
             orderPayloadInstance.serviceAproxTime = parseInt(orderPayloadInstance.address.travelTime) + parseInt(process.env.ESTIMATED_PREPARING_TIME) + ' minutos'
@@ -177,7 +173,7 @@ function deliveryChoosing(client, orderPayloadInstance) {
         content: 'Oops! Parece que você já escolheu uma opção desse menu.'
     }
 
-    // Handler of message events for 'deliveryChoosing Activity', with state machine approach
+    // Handler of message events for 'deliveryPhase Activity', with state machine approach
     let conversationState = 'start_delivery';
 
     client.on('message', async message => {
@@ -185,25 +181,26 @@ function deliveryChoosing(client, orderPayloadInstance) {
             switch(conversationState) {
                 case 'start_delivery':
                     if (message.selectedButtonId == 'courier_delivery') {
-                        messageSender(client, address1MessageParams)
+                        await messageSender(client, address1MessageParams)
                         conversationState = 'waiting_for_address_phase_1';
+
                     } else if (message.selectedButtonId == 'takeout') {
                         orderPayloadInstance.isTakeOut = true;
                         finalConfirmationMessageParams.content = await createButtonsFinalConfirmation()
-                        messageSender(client, finalConfirmationMessageParams)
+                        await messageSender(client, finalConfirmationMessageParams)
                         conversationState = 'waiting_for_final_confirmation';
                     }
                     break;
                 
                 case 'waiting_for_address_phase_1':
                     orderPayloadInstance.address.street = message.body
-                    messageSender(client, address2MessageParams)
+                    await messageSender(client, address2MessageParams)
                     conversationState = 'waiting_for_address_phase_2';
                     break;
 
                 case 'waiting_for_address_phase_2':
                     orderPayloadInstance.address.number = message.body
-                    messageSender(client, address3MessageParams)
+                    await messageSender(client, address3MessageParams)
                     conversationState = 'waiting_for_address_phase_3';
                     break;
 
@@ -214,15 +211,17 @@ function deliveryChoosing(client, orderPayloadInstance) {
                     const travelParameters = await setTravelParameters(orderPayloadInstance.address.street, orderPayloadInstance.address.number, orderPayloadInstance.address.cep)
                     
                     if (travelParameters == 'NOT_FOUND') {
-                        messageSender(client, deliveryNotFoundMessageParams)
+                        await messageSender(client, deliveryNotFoundMessageParams)
                         conversationState = 'waiting_for_action_on_address_not_found'
+
                     } else if (orderPayloadInstance.address.distance > process.env.MAX_DELIVERY_RANGE_IN_KM) {
-                        messageSender(client, deliveryNotInRangeMessageParams)
+                        await messageSender(client, deliveryNotInRangeMessageParams)
                         conversationState = 'waiting_for_action_on_address_not_in_range'
+
                     } else { 
                         orderPayloadInstance.address.cep = message.body
                         address4MessageParams.content = await createButtonsFullAddress()
-                        messageSender(client, address4MessageParams)
+                        await messageSender(client, address4MessageParams)
                         conversationState = 'waiting_for_address_phase_4';
                     }
                     break;
@@ -230,7 +229,7 @@ function deliveryChoosing(client, orderPayloadInstance) {
                     case 'waiting_for_action_on_address_not_found':
                         if (message.selectedButtonId == 'reset_delivery') {
                             deliveryReset()
-                            messageSender(client, introMessageParams)
+                            await messageSender(client, introMessageParams)
                             conversationState = 'start_delivery';
                         }
                         break;
@@ -238,10 +237,11 @@ function deliveryChoosing(client, orderPayloadInstance) {
                     case 'waiting_for_action_on_address_not_in_range':
                         if (message.selectedButtonId == 'reset_delivery') {
                             deliveryReset()
-                            messageSender(client, introMessageParams)
+                            await messageSender(client, introMessageParams)
                             conversationState = 'start_delivery';
+
                         } else if (message.selectedButtonId == 'cancel_order') {
-                            messageSender(client, cancelledMessageParams)
+                            await messageSender(client, cancelledMessageParams)
                             conversationState = 'finish_delivery';
                             return;
                         }
@@ -250,20 +250,23 @@ function deliveryChoosing(client, orderPayloadInstance) {
                 case 'waiting_for_address_phase_4':
                     if (message.selectedButtonId == 'full_address_recommended') {
                         // recommended address is already assigned to fullAddress
+
                     } else if (message.selectedButtonId == 'full_address_given') {
                         orderPayloadInstance.address.fullAddress = `${orderPayloadInstance.address.street}, Nº ${orderPayloadInstance.address.number}, CEP ${orderPayloadInstance.address.cep}`
                     }
-                    messageSender(client, address5MessageParams)
+
+                    await messageSender(client, address5MessageParams)
                     conversationState = 'waiting_for_address_phase_5';
                     break;
 
                 case 'waiting_for_address_phase_5':
                     if (message.selectedButtonId == 'additionalAddressInformation_yes') {
-                        messageSender(client, address6MessageParams)
+                        await messageSender(client, address6MessageParams)
                         conversationState = 'waiting_for_address_phase_6';
+
                     } else if (message.selectedButtonId == 'additionalAddressInformation_no') {
                         finalConfirmationMessageParams.content = await createButtonsFinalConfirmation()
-                        messageSender(client, finalConfirmationMessageParams)
+                        await messageSender(client, finalConfirmationMessageParams)
                         conversationState = 'waiting_for_final_confirmation';
                     }
                     break;
@@ -271,23 +274,24 @@ function deliveryChoosing(client, orderPayloadInstance) {
                 case 'waiting_for_address_phase_6':
                     orderPayloadInstance.address.additionalAddressInformation = message.body
                     finalConfirmationMessageParams.content = await createButtonsFinalConfirmation()
-                    messageSender(client, finalConfirmationMessageParams)
+                    await messageSender(client, finalConfirmationMessageParams)
                     conversationState = 'waiting_for_final_confirmation';
                     break;
 
                 case 'waiting_for_final_confirmation':
                     if (message.selectedButtonId == 'confirm_delivery') {
-                        paymentChoosing(client, orderPayloadInstance)
+                        paymentPhase(client, orderPayloadInstance)
                         conversationState = 'finish_delivery';
+                        
                     } else if (message.selectedButtonId == 'reset_delivery') {
                         deliveryReset()
-                        messageSender(client, introMessageParams)
+                        await messageSender(client, introMessageParams)
                         conversationState = 'start_delivery';
                     }
                     break;
                     
                 case 'finish_delivery':
-                    //messageSender(client, finishedMessageParams)
+                    //await messageSender(client, finishedMessageParams)
                     break;
 
                 default:
@@ -298,4 +302,4 @@ function deliveryChoosing(client, orderPayloadInstance) {
     })
 }
 
-module.exports = deliveryChoosing;
+module.exports = deliveryPhase;
