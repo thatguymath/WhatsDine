@@ -1,5 +1,4 @@
 const itemsPhase = require('./itemsPhase');
-const cartValidation = require('./cartValidation')
 
 const path = require('path');
 const fileName = path.basename(__filename, path.extname(__filename));
@@ -163,7 +162,6 @@ function createOrderPayload(client, message, chat, order) {
 
     const orderPayloadInstance = new orderPayload(message, chat, order);
     
-    cartValidation(client, orderPayloadInstance)
     itemsPhase(client, orderPayloadInstance)
 }
 
