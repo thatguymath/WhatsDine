@@ -1,4 +1,5 @@
 const itemsPhase = require('./itemsPhase');
+const cartValidation = require('./cartValidation')
 
 const path = require('path');
 const fileName = path.basename(__filename, path.extname(__filename));
@@ -11,6 +12,7 @@ function createOrderPayload(client, message, chat, order) {
             this.checkoutPhase = fileName,
             this.userId = message.from/* .split('@')[0] */,
             this.name = message._data?.notifyName,
+            this._isFinished = false,
             this._cpf = '',
             this.order = {
                 createdAt: new Date(1000*order.createdAt), // UNIX' secs epoch to Javascript millisecs epoch
@@ -48,6 +50,15 @@ function createOrderPayload(client, message, chat, order) {
                     _isPaid: false
                 }
             }
+        }
+
+        // CPF GetSet Pair
+        get isFinished() {
+            return this._isFinished;
+        }
+
+        set isFinished(value) {
+            this._isFinished = value;
         }
         
         // CPF GetSet Pair
@@ -152,6 +163,7 @@ function createOrderPayload(client, message, chat, order) {
 
     const orderPayloadInstance = new orderPayload(message, chat, order);
     
+    cartValidation(client, orderPayloadInstance)
     itemsPhase(client, orderPayloadInstance)
 }
 

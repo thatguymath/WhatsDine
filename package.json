@@ -9,7 +9,7 @@
   "author": "Matheus",
   "license": "ISC",
   "dependencies": {
-    "@googlemaps/google-maps-services-js": "^3.3.28",
+    "@googlemaps/google-maps-services-js": "^3.3.31",
     "@seald-io/nedb": "^4.0.2",
     "axios": "^1.4.0",
     "chalk": "^4.1.2",

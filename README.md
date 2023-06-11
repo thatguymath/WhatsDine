@@ -4,8 +4,8 @@ Este projeto apresenta um sistema de delivery desenvolvido com base no aplicativ
 
 ## Instalação
 ```
-git clone https://github.com/username/projectname.git  
-cd projectname  
+git clone https://github.com/thatguymath/WPP-DeliveryChatbot.git
+cd WPP-DeliveryChatbot  
 npm install  
 ```
 
@@ -28,7 +28,7 @@ This project presents a delivery system developed based on the messaging applica
 
 ## Installation
 ```
-git clone https://github.com/username/projectname.git  
+git clone https://github.com/thatguymath/WPP-DeliveryChatbot.git
 cd projectname  
 npm install  
 ```

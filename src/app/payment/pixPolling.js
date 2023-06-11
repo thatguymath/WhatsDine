@@ -9,7 +9,7 @@ module.exports = (async function pixPaymentsPolling() {
 
         successfulPaymentsArr.forEach(async element => {
             const orderPayload = await readOneRecord('orders', { 'payment.info._pixTxId': element.txid })
-            if (orderPayload.payment.info._isPaid === false) {
+            if (orderPayload?.payment?.info?._isPaid === false) {
                 await updateRecord('orders', { _id: orderPayload._id }, { $set: { 'payment.info._isPaid': true } })
                 console.log(global.consoleFormatter('gray', 'LOG', `Pagamento do pedido ${orderPayload.cartOrderId} de ${orderPayload.userId} (${orderPayload.name}) via Pix foi recebido`))
                 postPaymentInteraction(orderPayload)

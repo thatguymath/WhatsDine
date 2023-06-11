@@ -1,9 +1,9 @@
-const requestGN_API = require('../../api/pixGatewayGerencianet');
+const requestEFI_API = require('../../api/pixGatewayGerencianet');
 const moment = require('moment');
 
-const reqGNAlready = requestGN_API({
-  clientID: process.env.GN_CLIENT_ID,
-  clientSecret: process.env.GN_CLIENT_SECRET
+const reqGNAlready = requestEFI_API({
+  clientID: process.env.EFI_CLIENT_ID,
+  clientSecret: process.env.EFI_CLIENT_SECRET
 });
 
 async function CreatePixCob (totalValue) {
@@ -15,7 +15,7 @@ async function CreatePixCob (totalValue) {
     valor: {
       original: totalValue.toString()
     },
-    chave: process.env.GN_RECEIVER_PIX_KEY,
+    chave: process.env.EFI_RECEIVER_PIX_KEY,
     infoAdicionais: [
       {
         nome: 'WhatsApp Delivery',

@@ -2,7 +2,7 @@ const axios = require('axios');
 const fs = require('fs');
 const https = require('https');
 
-var certificado = fs.readFileSync(`./src/certificates/${process.env.GN_CERTIFICATE_FILENAME_WITH_EXTENSION}`);
+var certificado = fs.readFileSync(`./src/certificates/${process.env.EFI_CERTIFICATE_FILENAME}`);
 
 const agent = new https.Agent({
   pfx: certificado,
@@ -17,7 +17,7 @@ const authenticateCredentials = ({ clientID, clientSecret }) => {
   
     return axios({
       method: 'POST',
-      url: `${process.env.GN_ENDPOINT}/oauth/token`,
+      url: `${process.env.EFI_ENDPOINT}/oauth/token`,
       headers: {
         Authorization: `Basic ${credentials}`,
         'Content-Type': 'application/json'
@@ -33,13 +33,13 @@ const authenticateCredentials = ({ clientID, clientSecret }) => {
 };
 
 
-const requestGN_API = async (credentials) => {
+const requestEFI_API = async (credentials) => {
   try {
     const authResponse = await authenticateCredentials(credentials);
     const accessToken = authResponse.data?.access_token;
   
     return axios.create({
-      baseURL: process.env.GN_ENDPOINT,
+      baseURL: process.env.EFI_ENDPOINT,
       httpsAgent: agent,
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -51,4 +51,4 @@ const requestGN_API = async (credentials) => {
   }
 }
 
-module.exports = requestGN_API;
+module.exports = requestEFI_API;
