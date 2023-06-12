@@ -17,7 +17,7 @@ async function paymentPhase(client, orderPayloadInstance) {
         Object.keys(orderPayloadInstance.payment.info).forEach(key => {
             orderPayloadInstance.payment.info[key] = '';
         });
-        orderPayloadInstance.info.isPaid = false;
+        orderPayloadInstance.isPaid = false;
     }
 
     if (orderPayloadInstance.isTakeOut) orderPayloadInstance.totalValue = parseFloat(orderPayloadInstance.order.itemsTotal)
