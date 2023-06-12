@@ -15,6 +15,8 @@ async function deliveryPhase(client, orderPayloadInstance) {
     // Reset all values of the address object and isTakeOut flag
     function deliveryReset () {
         orderPayloadInstance.isTakeOut = false;
+        orderPayloadInstance.deliveryFee = 0;
+        orderPayloadInstance.serviceAproxTime = '';
         Object.keys(orderPayloadInstance.address).forEach(key => {
             orderPayloadInstance.address[key] = '';
         });
