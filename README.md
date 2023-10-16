@@ -1,5 +1,5 @@
 :brazil:
-# Chatbot via Whatsapp para Delivery
+# WhatsDine - Chatbot via Whatsapp para Delivery
 Este projeto apresenta um sistema de delivery desenvolvido com base no aplicativo de troca de mensagens WhatsApp, a fim de facilitar o processo de venda entre clientes e restaurantes de pequeno porte. Com a popularidade massiva e gratuidade do aplicativo WhatsApp, que alcança 99% da população brasileira com acesso a smartphones, é plausível o oferecimento de uma solução que aproveite as funcionalidades da ferramenta de forma acessível para os stakeholders envolvidos nesse tipo de venda recorrente.
 
 Quer saber mais? Veja em https://repositorio.unesp.br/handle/11449/244406
@@ -31,7 +31,7 @@ Então, para iniciar o projeto, execute:
 --
 
 :us:
-# Whatsapp Chatbot for Delivery
+# WhatsDine - Whatsapp Chatbot for Delivery
 This project presents a delivery system developed based on the messaging application WhatsApp, in order to facilitate the sales process between customers and small restaurants. With the massive popularity and free to use nature of WhatsApp, reaching 99% of the Brazilian population with access to smartphones, it is plausible to offer a solution that takes advantage of its features in an accessible way for stakeholders involved in this kind of recurring sales.
 
 Want to know more? Check it on https://repositorio.unesp.br/handle/11449/244406
