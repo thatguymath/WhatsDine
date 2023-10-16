@@ -13,17 +13,6 @@ npm install
 
 ## Utilização
 Antes de executar o projeto, você precisa configurar um arquivo `.env` no diretório raiz do projeto com as seguintes variáveis:
-LOCALHOST_PORT = 8000
-MAX_DELIVERY_RANGE_IN_KM = 10
-PRICE_PER_KILOMETER = 2.3
-ESTIMATED_PREPARING_TIME = 35
-RESTAURANT_ADDRESS =
-GOOGLE_API_KEY =
-EFI_CLIENT_ID =
-EFI_CLIENT_SECRET =
-EFI_CERTIFICATE_FILENAME =
-EFI_RECEIVER_PIX_KEY =
-EFI_ENDPOINT = https://api-pix.gerencianet.com.br
 
 - LOCALHOST_PORT define a porta na qual o aplicativo será executado;
 - MAX_DELIVERY_RANGE_IN_KM define o range máximo para delivery das entregas, em kilômetros;
