@@ -1,6 +1,6 @@
 :brazil:
 # WhatsDine - Chatbot via Whatsapp para Delivery
-Este projeto apresenta um sistema de delivery desenvolvido com base no aplicativo de troca de mensagens WhatsApp, a fim de facilitar o processo de venda entre clientes e restaurantes de pequeno porte. Com a popularidade massiva e gratuidade do aplicativo WhatsApp, que alcança 99% da população brasileira com acesso a smartphones, é plausível o oferecimento de uma solução para os stakeholders envolvidos nesse tipo de venda recorrente.
+Este projeto apresenta um sistema de delivery desenvolvido com base no aplicativo de troca de mensagens WhatsApp, a fim de gerenciar o processo de venda entre clientes e restaurantes de pequeno a médio porte. Com a popularidade massiva e gratuidade do aplicativo, que alcança 99% da população brasileira com acesso a smartphones, é plausível o oferecimento de uma solução que aproveite as funcionalidades da ferramenta de forma acessível para os stakeholders envolvidos nesse tipo de venda recorrente.
 
 Quer saber mais? Veja em https://repositorio.unesp.br/handle/11449/244406
 
@@ -32,7 +32,7 @@ Então, para iniciar o projeto, execute:
 
 :us:
 # WhatsDine - Whatsapp Delivery Chatbot
-This project presents a delivery system based on the WhatsApp messaging application, in order ease the sales process between customers and small restaurants. Giving WhatsApp's massive popularity and free to use nature, reaching 99% of the Brazilian population with access to smartphones, it's plausible to offer a solution for stakeholders involved in this kind of recurring sales.
+This project introduces a delivery system developed with the messaging application WhatsApp in mind, aiming to manage the sales process between customers and small to medium-sized restaurants. Given the widespread popularity and free accessibility of the application, which reaches 99% of the Brazilian population with smartphone access, it is reasonable to offer a solution that effectively utilizes the tool's functionalities in a user-friendly manner for the stakeholders involved in this type of recurring sales.
 
 Want to know more? Check it on https://repositorio.unesp.br/handle/11449/244406
 
